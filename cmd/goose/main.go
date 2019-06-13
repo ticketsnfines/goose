@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/pressly/goose"
+	"github.com/ticketsnfines/goose"
 )
 
 var (
@@ -84,6 +84,7 @@ Drivers:
     mysql
     sqlite3
     redshift
+    oracle
 
 Examples:
     goose sqlite3 ./foo.db status

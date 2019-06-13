@@ -34,6 +34,8 @@ func SetDialect(d string) error {
 		dialect = &RedshiftDialect{}
 	case "tidb":
 		dialect = &TiDBDialect{}
+	case "oracle":
+		dialect = &OracleDialect{}
 	default:
 		return fmt.Errorf("%q: unknown dialect", d)
 	}
@@ -208,4 +210,42 @@ func (m TiDBDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
 
 func (m TiDBDialect) deleteVersionSQL() string {
 	return fmt.Sprintf("DELETE FROM %s WHERE version_id=?;", TableName())
+}
+
+////////////////////////////
+// Oracle
+////////////////////////////
+
+// OracleDialect struct.
+type OracleDialect struct{}
+
+// TODO +
+func (m OracleDialect) createVersionTableSQL() string {
+	return fmt.Sprintf(`CREATE TABLE %s (
+                id VARCHAR2(255) NOT NULL,
+                version_id VARCHAR2(255) NOT NULL,
+                is_applied NUMBER(1) DEFAULT 0,
+                tstamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT waas_policies_pk PRIMARY KEY (id)
+            );`, TableName())
+}
+
+// TODO +
+func (m OracleDialect) insertVersionSQL() string {
+	return fmt.Sprintf("INSERT INTO %s (version_id, is_applied) VALUES (:1, :2);", TableName())
+}
+
+// TODO +
+func (m OracleDialect) dbVersionQuery(db *sql.DB) (*sql.Rows, error) {
+	rows, err := db.Query(fmt.Sprintf("SELECT version_id, is_applied FROM %s ORDER BY id DESC", TableName()))
+	if err != nil {
+		return nil, err
+	}
+
+	return rows, err
+}
+
+// TODO +
+func (m OracleDialect) deleteVersionSQL() string {
+	return fmt.Sprintf("DELETE FROM %s WHERE version_id=:1;", TableName())
 }
